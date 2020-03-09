@@ -48,13 +48,13 @@ function viewEmployees() {
         `SELECT first_name, last_name,title,salary 
          FROM employees 
          INNER JOIN employee_role ON employees.role_id = employee_role.id`,
-         
+
         function (err, results) {
             if (err) throw err;
             console.log("-----------------------")
             console.table(results)
         })
-        start()
+        // start()
 }
 
 function removeEmployee() {
@@ -87,59 +87,62 @@ const query = connection.query("SELECT id FROM employees",
         console.log("Employee successfully removed");
         viewEmployees()
         console.log("-----------------------")
-        start()
+        // start()
     })
 })
 })
 }
-// function addEmployee() {
-//     inquirer.prompt([
-//         {
-//             type: "input",
-//             message:"What is the first name?",
-//             name:"first",
+function addEmployee() {
+    choicesArray = []
+    connection.query("SELECT title,id FROM employee_role", function(err,results){
+        if(err) throw err;
+        for (var i = 0; i < results.length; i++) {
+            choicesArray.push(results[i].title);
+          }
+    })
+    inquirer.prompt([
+        {
+            type: "input",
+            message:"What is the first name?",
+            name:"first",
         
-//         },
-//         {
-//             type: "input",
-//             message:"What is the last name?",
-//             name:"last",
-//         },
-//         {
-//             type: "input",
-//             message:"What is the role?",
-//             name:"role"
-//         }
-//     ])
-//     .then(function(answers){
-//         const query = connection.query("INSERT INTO employees ?",
-//         {
-//             first_name: answers.first,
-//             last_name: answers.last,
-//             employee_role:answers.role
-//         },
-//         function(err) {
-//             if (err) throw err;
-//             console.log("Employee successfully added!");
-//         })
-//     })
-//     start()
-// }
+        },
+        {
+            type: "input",
+            message:"What is the last name?",
+            name:"last",
+        },
+        {
+            type: "rawlist",
+            message:"select a role",
+            name:"role",
+            choices: choicesArray
+        }
+    ])
+    .then(function(answers){
+        var pick
+        if( answers.role === "Sales Lead"){
+            pick = 1
+        }else if( answers.role=== "Salesperson"){
+            pick = 2
+        }else if( answers.role==="Lead Engineer" ){
+            pick = 3
+        }else if( answers.role==="Software Engineer" ){
+            pick = 4
+        }else if( answers.role === "Accountant"){
+            pick = 5
+        }
+        const query = connection.query("INSERT INTO employees(first_name,last_name,role_id) values(?, ?,?)",
+        [
+         `${answers.first}`,
+         `${answers.last}`,
+         `${pick}`
 
-// function updateRole() {
-
-//     start()
-// }
-// function test(){
-//     viewEmployees()
-//     const idList=[]
-// const query = connection.query("SELECT id FROM employees",
-//         function (err, results) {
-//             if (err) throw err;
-//             for(i = 0; i <results.length; i++){
-//                 idList.push(results[i].id)
-//             }
-//             console.log(idList)
-// })
-// }
-// test()
+        ],
+        function(err) {
+            if (err) throw err;
+            console.log("Employee successfully added!");
+        })
+    })
+    // start()
+}
