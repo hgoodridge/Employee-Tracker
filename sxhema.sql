@@ -29,12 +29,6 @@ CREATE TABLE employee_role(
     FOREIGN KEY (department_id) REFERENCES department(id)
 );
 
-
-SELECT first_name,last_name 
-FROM employees 
-employees INNER JOIN employee_role ON employees.role_id = employee_role.id
-
-
 INSERT INTO department (department_name)
 VALUES("Sales");
 
@@ -51,19 +45,19 @@ INSERT INTO department (department_name)
 VALUES("Engineering");
 
 INSERT INTO employees (first_name,last_name,role_id)
-VALUES("Tim","Duncan","0");
+VALUES("Tim","Duncan","1");
 
 INSERT INTO employees (first_name,last_name,role_id)
-VALUES("Paul","Pierce","1");
+VALUES("Paul","Pierce","2");
 
 INSERT INTO employees (first_name,last_name,role_id)
-VALUES("Ray","Allen","2");
+VALUES("Ray","Allen","3");
 
 INSERT INTO employees (first_name,last_name,role_id)
-VALUES("Kemba","Walker","3");
+VALUES("Kemba","Walker","4");
 
 INSERT INTO employees (first_name,last_name,role_id)
-VALUES("Lebron","James","4");
+VALUES("Lebron","James","5");
 
 INSERT INTO employee_role (title,salary,department_id)
 VALUES("Sales Lead","80000","1");
