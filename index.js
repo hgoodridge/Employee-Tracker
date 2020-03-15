@@ -22,12 +22,13 @@ function start() {
             name: "start",
             choices: [
                 "view all employees",
-                "remove employee",
-                "add employee",
-                "update employee role",
-                "add department",
                 "view departments",
                 "view roles",
+                "add employee",
+                "add department",
+                "add role",
+                "update employee role",
+                "remove employee"
                 
             ]
 
@@ -49,7 +50,9 @@ function start() {
                 viewDepartments();
             }else if(answers.start === "view roles"){
                 viewRoles();
-            };
+            }else if(answers.start === "add role"){
+                addRole()
+            }
         })
 }
 
@@ -125,13 +128,13 @@ function addEmployee() {
         inquirer.prompt([
             {
                 type: "input",
-                message: "What is the first name?",
+                message: "What is the employee's first name?",
                 name: "first",
     
             },
             {
                 type: "input",
-                message: "What is the last name?",
+                message: "What is the employee's last name?",
                 name: "last",
             },
             {
@@ -155,7 +158,7 @@ function addEmployee() {
                         console.log(`Employee successfully added!
 
                         `);
-                        start();
+                        viewEmployees();
                     })
             })
         
@@ -165,7 +168,7 @@ function addDepartment(){
     inquirer.prompt([
         {
             type: "input",
-            message: "what department would you like to add",
+            message: "What is the name of the department that you would like to add?",
             name:"newDept"
 
         }
@@ -179,7 +182,7 @@ function addDepartment(){
             if(err) throw err
             console.log("department successfully added!")
         })
-        
+        viewDepartments()
     })
 }
 
@@ -196,9 +199,9 @@ function viewDepartments(){
 
 function viewRoles(){
     const query = connection.query(
-        `SELECT title,department_name
+        `SELECT title
          FROM employee_role
-         INNER JOIN department ON department.id = employee_role.department_id`,
+         `,
         function(err,results){
             if(err) throw err;
             console.table(results)
@@ -209,19 +212,26 @@ function viewRoles(){
 function updateRole(){
     const newRole=[]
     const employeeList=[]
+    connection.query("SELECT title,id FROM employee_role",function(err,results){
+    if(err) throw err
+    for(i =0;i < results.length; i++){
+        newRole.push({
+            name: results[i].title,
+            value: results[i].id
+        })
+    }
+    
+    })
     const query = connection.query(`
     SELECT employees.id,first_name,last_name,title
-    FROM employees 
-    INNER JOIN employee_role ON employees.role_id = employee_role.id
+    FROM employee_role 
+    INNER JOIN employees ON employee_role.id = employees.role_id 
     INNER JOIN department ON department.id = employee_role.department_id`,
     function(err,results){
         console.table(results)
         for (i = 0; i < results.length; i++) {
             employeeList.push(results[i].id);
-            newRole.push({
-                name: results[i].title,
-                value: results[i].id
-            })
+           
         }
         if(err) throw err
         inquirer.prompt([
@@ -252,7 +262,58 @@ function updateRole(){
             console.log(`Role successfully updated!
             
             `)
-            start()
+            viewEmployees()
             })
         })
     }
+
+function addRole(){
+    const depChoice = []
+    connection.query(
+        "SELECT id, department_name FROM department",
+        function(err,results){
+            if(err) throw err;
+            for(i = 0; i < results.length;i++){
+                depChoice.push(
+                    {
+                        name:results[i].department_name,
+                        value:results[i].id
+                    }
+                    )
+                }
+            inquirer.prompt([
+                {
+                    type:"list",
+                    message:"Which department would you like to add a role to?",
+                    name:"newroleDep",
+                    choices: depChoice
+                },
+                {
+                    tpye:"input",
+                    message: "What is the name of the role that you would like to add?",
+                    name:"newRole"
+                },
+                {
+                    tpye:"input",
+                    message: "what is the salary of this role?",
+                    name:"salaryNewRole"
+                }
+            ]).then(function(answers){
+                console.log(answers)
+                connection.query("INSERT INTO employee_role(title,salary,department_id) VALUES(?,?,?)",
+                [
+                
+                `${answers.newRole}`,
+            
+                `${answers.salaryNewRole}`,
+                
+                `${answers.newroleDep}`
+            ]
+                
+                )
+                console.log("added new role!")
+            viewRoles()
+            })
+        }
+    )
+}
